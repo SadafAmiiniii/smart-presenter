@@ -64,7 +64,7 @@ void setup() {
   pinMode(SWITCH_PIN, INPUT);
 
   Serial1.begin(9600, SERIAL_8N1, 16, 17);  //RX=16, TX=17
-  Serial2.begin(9600, SERIAL_8N1, 12, 13);  //RX=12, TX=13 -                     
+  // Serial2.begin(9600, SERIAL_8N1, 12, 13);  //RX=12, TX=13 -                     
 
   Keyboard.begin();
   Mouse.begin();         

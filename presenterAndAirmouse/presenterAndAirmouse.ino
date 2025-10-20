@@ -56,22 +56,22 @@ bool initMPU() {
 }
 
 void setup() {
-  Serial.begin(115200);
+  // Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
 
-  pinMode(LEFTBUTTON, INPUT_PULLUP);
-  pinMode(RIGHTBUTTON, INPUT_PULLUP);
-  pinMode(SWITCH_PIN, INPUT);
+  // pinMode(LEFTBUTTON, INPUT_PULLUP);
+  // pinMode(RIGHTBUTTON, INPUT_PULLUP);
+  // pinMode(SWITCH_PIN, INPUT);
 
-  Serial1.begin(9600, SERIAL_8N1, 16, 17);  //RX=16, TX=17
-  // Serial2.begin(9600, SERIAL_8N1, 12, 13);  //RX=12, TX=13 -                     
+  // Serial1.begin(9600, SERIAL_8N1, 16, 17);  //RX=16, TX=17
+  // // Serial2.begin(9600, SERIAL_8N1, 12, 13);  //RX=12, TX=13 -                     
 
-  Keyboard.begin();
-  Mouse.begin();         
+  // Keyboard.begin();
+  // Mouse.begin();         
 
-  if (!initMPU()) {
-    Serial.println("MPU init failed");
-  }
+  // if (!initMPU()) {
+  //   Serial.println("MPU init failed");
+  // }
 }
 
 void loop() {

@@ -3,8 +3,7 @@
 
 #define LEFTBUTTON 33
 #define RIGHTBUTTON 25
-#define SWITCH_PIN 15
-#define LED_BUILTIN 2
+#define SWITCH_PIN 4
 
 
 Adafruit_MPU6050 mpu;
@@ -57,14 +56,13 @@ bool initMPU() {
 
 void setup() {
   Serial.begin(115200);
-  pinMode(LED_BUILTIN, OUTPUT);
 
   pinMode(LEFTBUTTON, INPUT_PULLUP);
   pinMode(RIGHTBUTTON, INPUT_PULLUP);
   pinMode(SWITCH_PIN, INPUT);
 
   Serial1.begin(9600, SERIAL_8N1, 16, 17);  //RX=16, TX=17
-  Serial2.begin(9600, SERIAL_8N1, 26, 13);  //RX=12, TX=13 -                     
+  Serial2.begin(9600, SERIAL_8N1, 26, 13);  //RX=26, TX=13 -                     
 
   Keyboard.begin();
   Mouse.begin();         
@@ -75,134 +73,132 @@ void setup() {
 }
 
 void loop() {
- digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on (HIGH is the voltage level)
-  delay(500);                      // wait for a second
-  digitalWrite(LED_BUILTIN, LOW);   // turn the LED off by making the voltage LOW
-  delay(500);                      // wait for a second
-  // bool isAirMouseMode = digitalRead(SWITCH_PIN);      //true = Air Mouse, false = Motion Presenter
 
-  // if (Keyboard.isConnected()) {
-  //   if (Serial1.available()) {
-  //     String msg = Serial1.readStringUntil('\n');
-  //     Keyboard.print(msg+ ' '); 
-  //     delay(100); 
-  //     Keyboard.releaseAll();
-  //   }
+  bool isAirMouseMode = digitalRead(SWITCH_PIN);      //true = Air Mouse, false = Motion Presenter
 
-  //   if (Serial2.available() >= 2) {
-  //     byte highByte = Serial2.read();
-  //     byte lowByte = Serial2.read();
+  if (Keyboard.isConnected()) {
+    if (Serial1.available()) {
+      String msg = Serial1.readStringUntil('\n');
+      Keyboard.print(msg+ ' '); 
+      delay(100); 
+      Keyboard.releaseAll();
+    }
 
-  //     receivedValue = (highByte << 8) | lowByte;
+    if (Serial2.available() >= 2) {
+      byte highByte = Serial2.read();
+      byte lowByte = Serial2.read();
 
-  //     if (receivedValue == 0xAA00) {
-  //       Keyboard.press(KEY_RIGHT_ARROW);
-  //       delay(100);
-  //       Keyboard.releaseAll();
-  //     } else if (receivedValue == 0xAA11) {
-  //       Keyboard.press(KEY_LEFT_ARROW);
-  //       delay(100);
-  //       Keyboard.releaseAll();
-  //     } else if (receivedValue == 0xAA22) {
-  //       Keyboard.press(KEY_F5);
-  //       delay(100);
-  //       Keyboard.releaseAll();
-  //     } else if (receivedValue == 0xAA33) {
-  //       Keyboard.press(KEY_ESC);
-  //       delay(100);
-  //       Keyboard.releaseAll();
-  //     }
-  //   }
+      receivedValue = (highByte << 8) | lowByte;
+
+      if (receivedValue == 0xAA00) {
+        Keyboard.press(KEY_RIGHT_ARROW);
+        delay(100);
+        Keyboard.releaseAll();
+      } else if (receivedValue == 0xAA11) {
+        Keyboard.press(KEY_LEFT_ARROW);
+        delay(100);
+        Keyboard.releaseAll();
+      } else if (receivedValue == 0xAA22) {
+        Keyboard.press(KEY_F5);
+        delay(100);
+        Keyboard.releaseAll();
+      } else if (receivedValue == 0xAA33) {
+        Keyboard.press(KEY_ESC);
+        delay(100);
+        Keyboard.releaseAll();
+      }
+    }
     
-  //   if (sleepMPU) {
-  //     sleepMPU = false;
-  //     mpu.enableSleep(false);
-  //   }
+    if (sleepMPU) {
+      sleepMPU = false;
+      mpu.enableSleep(false);
+    }
 
-  //   unsigned long now = millis();
+    unsigned long now = millis();
 
-  //   if (now - lastMPURead >= mpuInterval) {
-  //     lastMPURead = now;
+    if (now - lastMPURead >= mpuInterval) {
+      lastMPURead = now;
 
-  //     sensors_event_t a, g, temp;
-  //     bool mpuOK = true;
+      sensors_event_t a, g, temp;
+      bool mpuOK = true;
 
-  //     if (!mpu.getEvent(&a, &g, &temp)) {
-  //       Wire.end();
-  //       delay(10);
-  //       Wire.begin();
-  //       mpuOK = initMPU();
-  //     }
+      if (!mpu.getEvent(&a, &g, &temp)) {
+        Wire.end();
+        delay(10);
+        Wire.begin();
+        mpuOK = initMPU();
+      }
 
-  //     if (mpuOK) {
-  //       //Air Mouse
-  //       if (isAirMouseMode) {
-  //         if (now - lastMouseMove >= mouseInterval) {
-  //           lastMouseMove = now;
+      if (mpuOK) {
+        //Air Mouse
+        if (isAirMouseMode) {
+          if (now - lastMouseMove >= mouseInterval) {
+            lastMouseMove = now;
 
-  //           float smoothZ = movingAverage(gyroZBuffer, g.gyro.z, FILTER_SIZE, idxZ);
-  //           float smoothX = movingAverage(gyroXBuffer, g.gyro.x, FILTER_SIZE, idxX);
+            float smoothZ = movingAverage(gyroZBuffer, g.gyro.z, FILTER_SIZE, idxZ);
+            float smoothX = movingAverage(gyroXBuffer, g.gyro.x, FILTER_SIZE, idxX);
 
-  //           if (fabs(smoothZ) < DEADZONE_Z) smoothZ = 0;
-  //           if (fabs(smoothX) < DEADZONE_X) smoothX = 0;
+            if (fabs(smoothZ) < DEADZONE_Z) smoothZ = 0;
+            if (fabs(smoothX) < DEADZONE_X) smoothX = 0;
 
-  //           float magnitude = sqrt(smoothZ * smoothZ + smoothX * smoothX);
-  //           float dynamicSpeed = BASE_SPEED * log(1 + magnitude * 15);
+            float magnitude = sqrt(smoothZ * smoothZ + smoothX * smoothX);
+            float dynamicSpeed = BASE_SPEED * log(1 + magnitude * 15);
 
-  //           if (dynamicSpeed < BASE_SPEED) dynamicSpeed = BASE_SPEED;
-  //           if (dynamicSpeed > MAX_SPEED) dynamicSpeed = MAX_SPEED;
+            if (dynamicSpeed < BASE_SPEED) dynamicSpeed = BASE_SPEED;
+            if (dynamicSpeed > MAX_SPEED) dynamicSpeed = MAX_SPEED;
 
-  //           int moveX = (int)(smoothZ * -dynamicSpeed * Z_SENSITIVITY);
-  //           int moveY = (int)(smoothX * -dynamicSpeed * X_SENSITIVITY);
+            int moveX = (int)(smoothZ * -dynamicSpeed * Z_SENSITIVITY);
+            int moveY = (int)(smoothX * -dynamicSpeed * X_SENSITIVITY);
 
-  //           if (moveX != 0 || moveY != 0) {
-  //             Mouse.move(moveX, moveY);
-  //           }
-  //         }
+            if (moveX != 0 || moveY != 0) {
+              Mouse.move(moveX, moveY);
+            }
+          }
 
-  //         if (!digitalRead(LEFTBUTTON) && now - lastLeftClickTime > 300) {
-  //           Mouse.click(MOUSE_LEFT);
-  //           lastLeftClickTime = now;
-  //         }
-  //         if (!digitalRead(RIGHTBUTTON) && now - lastRightClickTime > 300) {
-  //           Mouse.click(MOUSE_RIGHT);
-  //           lastRightClickTime = now;
-  //         }
+          if (!digitalRead(LEFTBUTTON) && now - lastLeftClickTime > 300) {
+            Mouse.click(MOUSE_LEFT);
+            lastLeftClickTime = now;
+          }
+          if (!digitalRead(RIGHTBUTTON) && now - lastRightClickTime > 300) {
+            Mouse.click(MOUSE_RIGHT);
+            lastRightClickTime = now;
+          }
 
-  //       } 
-  //       //Motion Presenter
-  //       else {
-  //         if (now - lastGestureTime > gestureDelay) {
-  //           if (a.acceleration.x > 4) {
-  //             Keyboard.press(KEY_RIGHT_ARROW);
-  //             delay(100);
-  //             Keyboard.release(KEY_RIGHT_ARROW);
-  //             lastGestureTime = now;
-  //           } else if (a.acceleration.x < -4) {
-  //             Keyboard.press(KEY_LEFT_ARROW);
-  //             delay(100);
-  //             Keyboard.release(KEY_LEFT_ARROW);
-  //             lastGestureTime = now;
-  //           }
-  //         }
+        } 
+        //Motion Presenter
+        else {
+          if (now - lastGestureTime > gestureDelay) {
+            if (a.acceleration.x > 4) {
+              Keyboard.press(KEY_RIGHT_ARROW);
+              delay(100);
+              Keyboard.release(KEY_RIGHT_ARROW);
+              lastGestureTime = now;
+            } else if (a.acceleration.x < -4) {
+              Keyboard.press(KEY_LEFT_ARROW);
+              delay(100);
+              Keyboard.release(KEY_LEFT_ARROW);
+              lastGestureTime = now;
+            }
+          }
 
-  //         if (!digitalRead(LEFTBUTTON) && now - lastLeftBtnTime > 300) {
-  //           Keyboard.press(KEY_LEFT_ARROW);
-  //           delay(100);
-  //           Keyboard.release(KEY_LEFT_ARROW);
-  //           lastLeftBtnTime = now;
-  //         }
+          if (!digitalRead(LEFTBUTTON) && now - lastLeftBtnTime > 300) {
+            Keyboard.press(KEY_LEFT_ARROW);
+            delay(100);
+            Keyboard.release(KEY_LEFT_ARROW);
+            lastLeftBtnTime = now;
+          }
 
-  //         if (!digitalRead(RIGHTBUTTON) && now - lastRightBtnTime > 300) {
-  //           Keyboard.press(KEY_RIGHT_ARROW);
-  //           delay(100);
-  //           Keyboard.release(KEY_RIGHT_ARROW);
-  //           lastRightBtnTime = now;
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
+          if (!digitalRead(RIGHTBUTTON) && now - lastRightBtnTime > 300) {
+            Keyboard.press(KEY_RIGHT_ARROW);
+            delay(100);
+            Keyboard.release(KEY_RIGHT_ARROW);
+            lastRightBtnTime = now;
+          }
+        }
+      }
+    }
+  }
 
-  // delay(1);
+ 
+ delay(1);
 }
